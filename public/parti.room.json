@@ -3,7 +3,7 @@
   "protocolVersion": 1,
   "id": "cauldron-rush",
   "name": "Cauldron Rush",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "packageMode": "filesystem",
   "entry": {
     "ui": "index.html",
