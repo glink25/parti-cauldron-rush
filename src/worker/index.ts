@@ -255,7 +255,7 @@ function syncName(state: GameState, player: RoomPlayer) {
   if (p) { p.name = player.name; p.connected = true; }
 }
 
-export const __test = { initialState, makePlayer, placeChip, scoring, enterEvaluation, finishEvaluation, beginRound, maybeFinishEvaluation };
+const __test = { initialState, makePlayer, placeChip, scoring, enterEvaluation, finishEvaluation, beginRound, maybeFinishEvaluation };
 
 export default defineRoom<GameState>({
   meta: { name: 'Cauldron Rush', minPlayers: 2, maxPlayers: 5 },
