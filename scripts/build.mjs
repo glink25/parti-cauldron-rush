@@ -1,0 +1,17 @@
+import { execFileSync } from 'node:child_process';
+import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
+const root=process.cwd(), dist=path.join(root,'dist'), tmp=path.join(root,'.build-tmp');
+rmSync(dist,{recursive:true,force:true}); rmSync(tmp,{recursive:true,force:true}); mkdirSync(dist,{recursive:true}); mkdirSync(tmp,{recursive:true});
+const tsc=process.env.TSC || 'tsc';
+execFileSync(tsc,['--target','ES2022','--module','ESNext','--moduleResolution','Bundler','--strict','--skipLibCheck','--outDir',tmp,'src/worker/index.ts','src/types/parti-worker-sdk.d.ts'],{stdio:'inherit'});
+mkdirSync(path.join(tmp,'ui'),{recursive:true});
+execFileSync(tsc,['--target','ES2022','--module','ESNext','--moduleResolution','Bundler','--strict','--skipLibCheck','--lib','ES2022,DOM,DOM.Iterable','--outDir',path.join(tmp,'ui'),'src/ui/main.ts'],{stdio:'inherit'});
+cpSync('public/parti.room.json',path.join(dist,'parti.room.json'));
+cpSync('src/ui/style.css',path.join(dist,'style.css'));
+cpSync(path.join(tmp,'index.js'),path.join(dist,'room.worker.js'));
+let ui=readFileSync(path.join(tmp,'ui','main.js'),'utf8').replace("import './style.css';",'');
+writeFileSync(path.join(dist,'main.js'),ui);
+let html=readFileSync('index.html','utf8').replace('<script type="module" src="/src/ui/main.ts"></script>','<link rel="stylesheet" href="./style.css" /><script type="module" src="./main.js"></script>');
+writeFileSync(path.join(dist,'index.html'),html);
+console.log('Built dist/ with Parti filesystem package entries.');

@@ -1,0 +1,21 @@
+{
+  "partiVersion": "0.1.0",
+  "protocolVersion": 1,
+  "id": "cauldron-rush",
+  "name": "Cauldron Rush",
+  "version": "0.1.0",
+  "packageMode": "filesystem",
+  "entry": {
+    "ui": "index.html",
+    "worker": "room.worker.js"
+  },
+  "room": {
+    "minPlayers": 2,
+    "maxPlayers": 5
+  },
+  "sync": { "mode": "snapshot" },
+  "permissions": {
+    "network": false,
+    "storage": "session"
+  }
+}
