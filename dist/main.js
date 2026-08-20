@@ -1,0 +1,53 @@
+
+const app = document.querySelector('#app');
+let state = null;
+let toast = '';
+const colorLabel = { white: '危险', green: '稳定', orange: '火花', red: '烈焰', blue: '预见' };
+const shop = [['orange', 1, 3], ['green', 1, 4], ['red', 1, 5], ['blue', 1, 5], ['green', 2, 8], ['red', 2, 9], ['blue', 2, 10]];
+function act(name, payload) { void parti.action(name, payload); }
+function chipHtml(c) { return `<span class="chip ${c.color}" title="${colorLabel[c.color]}"><b>${c.value}</b></span>`; }
+function me() { return state && parti.playerId ? state.players[parti.playerId] : null; }
+function render() {
+    if (!state)
+        return;
+    const self = me();
+    app.innerHTML = `<main class="shell">
+    <header><div><span class="eyebrow">PARTI ALCHEMY LEAGUE</span><h1>Cauldron Rush</h1></div><div class="round">${state.phase === 'lobby' ? '准备室' : `第 ${state.round}/${state.maxRounds} 轮`}</div></header>
+    <section class="status">${toast || state.message}</section>
+    <section class="players">${state.order.map(id => playerCard(state.players[id], id === parti.playerId)).join('')}</section>
+    ${self ? controls(self) : '<section class="panel">观战中</section>'}
+  </main>`;
+    bind();
+}
+function playerCard(p, isMe) {
+    const flags = [p.exploded ? '💥 爆锅' : '', p.stopped && !p.exploded ? '✓ 停手' : '', !p.connected ? '离线' : ''].filter(Boolean).join(' · ');
+    return `<article class="player ${isMe ? 'self' : ''}"><div class="player-head"><strong>${escapeHtml(p.name)}${isMe ? ' · 你' : ''}</strong><span>${p.vp} VP · 💎${p.rubies}</span></div><div class="track"><i style="width:${Math.min(100, p.potPosition / 35 * 100)}%"></i></div><div class="mini">锅位 ${p.potPosition} · 危险 ${p.danger}/7 · 袋中 ${p.bag.length}${flags ? ` · ${flags}` : ''}</div><div class="chips">${p.pot.slice(-7).map(chipHtml).join('')}</div></article>`;
+}
+function controls(p) {
+    if (state.phase === 'lobby')
+        return `<section class="panel controls"><h2>准备炼金</h2><p>2–5 人，所有非房主玩家准备后即可开始。</p><div class="actions"><button data-a="setReady" data-p='{"ready":${!p.ready}}'>${p.ready ? '取消准备' : '我准备好了'}</button>${parti.playerId === state.hostId ? '<button class="primary" data-a="startGame">开始 7 轮竞速</button>' : ''}</div></section>`;
+    if (state.phase === 'brewing') {
+        if (p.pendingBlue)
+            return `<section class="panel controls"><h2>蓝色预见</h2><p>选择一枚放入锅，另一枚返回袋中。</p><div class="candidate">${p.pendingBlue.map(c => `<button class="chip-button" data-a="chooseBlueCandidate" data-p='{"instanceId":"${c.id}"}'>${chipHtml(c)}<span>${colorLabel[c.color]} ${c.value}</span></button>`).join('')}</div></section>`;
+        return `<section class="panel controls"><h2>${p.exploded ? '锅炉失控！' : p.stopped ? '本轮已停手' : '继续，还是收手？'}</h2><div class="meter"><span>危险值</span><b>${p.danger}/7</b></div><div class="actions"><button class="primary" data-a="drawChip" ${p.stopped || p.exploded ? 'disabled' : ''}>抽一枚筹码</button><button data-a="stop" ${p.stopped || p.exploded ? 'disabled' : ''}>停手</button><button data-a="useFlask" ${!p.flaskReady || p.exploded ? 'disabled' : ''}>🧪 Flask</button></div></section>`;
+    }
+    if (state.phase === 'evaluation') {
+        const remain = p.coinValue - p.shopSpent;
+        const reward = p.exploded && !p.rewardChoice
+            ? `<div class="actions"><button class="primary" data-a="chooseExplosionReward" data-p='{"choice":"vp"}'>拿 VP</button><button data-a="chooseExplosionReward" data-p='{"choice":"shop"}'>去购物</button></div>`
+            : '';
+        const store = (!p.exploded || p.rewardChoice === 'shop') && !p.evaluationDone
+            ? `<h3>商店 · 剩余 ${remain} 金币</h3><div class="shop">${shop.map(([c, v, price]) => `<button data-a="buyChip" data-p='{"color":"${c}","value":${v}}' ${price > remain || p.boughtColors.includes(c) ? 'disabled' : ''}>${chipHtml({ id: '', color: c, value: v })}<span>${price} 金币</span></button>`).join('')}</div>`
+            : '';
+        return `<section class="panel controls"><h2>轮末结算</h2><p>本轮锅位可得 <b>${p.vpValue} VP</b> 与 <b>${p.coinValue} 金币</b>${p.exploded ? '；爆锅只能二选一' : ''}。</p>${reward}${store}<div class="actions"><button data-a="spendRubies" data-p='{"option":"advance"}' ${p.rubies < 2 || p.startBonus >= 5 ? 'disabled' : ''}>💎2 起点 +1</button><button class="primary" data-a="finishShopping" ${p.evaluationDone || (p.exploded && !p.rewardChoice) ? 'disabled' : ''}>完成结算</button></div></section>`;
+    }
+    return `<section class="panel controls gameover"><h2>${state.winnerIds.includes(p.id) ? '🏆 你赢了！' : '炼金竞速结束'}</h2><p>${state.message}</p>${parti.playerId === state.hostId ? '<button class="primary" data-a="rematch">再来一局</button>' : ''}</section>`;
+}
+function bind() {
+    document.querySelectorAll('[data-a]').forEach(el => el.addEventListener('click', () => { const name = el.dataset.a; const payload = el.dataset.p ? JSON.parse(el.dataset.p) : undefined; act(name, payload); }));
+}
+function escapeHtml(s) { return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+parti.onState((next) => { state = next; toast = ''; render(); });
+parti.onEvent('game:invalid', (p) => { toast = `⚠ ${p?.message ?? '操作无效'}`; render(); setTimeout(() => { toast = ''; render(); }, 1400); });
+parti.exposeToAgent?.((s) => ({ game: 'Cauldron Rush', phase: s.phase, round: s.round, message: s.message, you: parti.playerId ? s.players[parti.playerId] : null, actions: ['setReady', 'startGame', 'drawChip', 'chooseBlueCandidate', 'stop', 'useFlask', 'chooseExplosionReward', 'buyChip', 'finishShopping', 'spendRubies', 'rematch'] }));
+parti.ready();
