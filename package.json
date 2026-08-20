@@ -1,6 +1,6 @@
 {
   "name": "cauldron-rush-parti",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,7 +9,9 @@
     "build:vite": "vite build",
     "typecheck": "tsc --noEmit",
     "test": "node scripts/test.mjs",
-    "package": "npm run build && cd dist && zip -qrFS ../cauldron-rush.parti.room.zip ."
+    "package": "npm run build && cd dist && zip -qrFS ../cauldron-rush.parti.room.zip .",
+    "ui:check": "node scripts/ui-check.mjs",
+    "verify": "npm run typecheck && npm test && npm run ui:check && npm run build"
   },
   "dependencies": {
     "@parti/worker-sdk": "^0.1.0"
