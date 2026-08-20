@@ -1,0 +1,28 @@
+{
+  "partiVersion": "0.1.0",
+  "protocolVersion": 1,
+  "id": "cauldron-rush",
+  "name": "Cauldron Rush",
+  "version": "0.1.4",
+  "packageMode": "filesystem",
+  "entry": {
+    "ui": "index.html",
+    "worker": "room.worker.js"
+  },
+  "room": {
+    "minPlayers": 2,
+    "maxPlayers": 5
+  },
+  "sync": {
+    "mode": "snapshot"
+  },
+  "permissions": {
+    "network": false,
+    "storage": "session"
+  },
+  "description": "2–5 人、7 轮的原创炼金 push-your-luck 游戏。抽取筹码推进锅轨，控制白色危险值，在爆锅风险与分数、购物之间做选择。",
+  "author": {
+    "name": "glink25"
+  },
+  "cover": "cover.svg"
+}
