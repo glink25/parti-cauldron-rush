@@ -8,6 +8,7 @@ execFileSync(tsc,['--target','ES2022','--module','ESNext','--moduleResolution','
 mkdirSync(path.join(tmp,'ui'),{recursive:true});
 execFileSync(tsc,['--target','ES2022','--module','ESNext','--moduleResolution','Bundler','--strict','--skipLibCheck','--lib','ES2022,DOM,DOM.Iterable','--outDir',path.join(tmp,'ui'),'src/ui/main.ts'],{stdio:'inherit'});
 cpSync('public/parti.room.json',path.join(dist,'parti.room.json'));
+cpSync('public/cover.svg',path.join(dist,'cover.svg'));
 cpSync('src/ui/style.css',path.join(dist,'style.css'));
 cpSync(path.join(tmp,'index.js'),path.join(dist,'room.worker.js'));
 const workerSource=readFileSync(path.join(dist,'room.worker.js'),'utf8');
@@ -17,4 +18,5 @@ let ui=readFileSync(path.join(tmp,'ui','main.js'),'utf8').replace("import './sty
 writeFileSync(path.join(dist,'main.js'),ui);
 let html=readFileSync('index.html','utf8').replace('<script type="module" src="/src/ui/main.ts"></script>','<link rel="stylesheet" href="./style.css" /><script type="module" src="./main.js"></script>');
 writeFileSync(path.join(dist,'index.html'),html);
-console.log('Built dist/ with Parti filesystem package entries.');
+if(!readFileSync(path.join(dist,'parti.room.json'),'utf8').includes('"cover": "cover.svg"')) throw new Error('manifest cover is missing');
+console.log('Built dist/ with Parti filesystem package entries and cover.');
