@@ -223,7 +223,7 @@ function syncName(state, player) {
         p.connected = true;
     }
 }
-export const __test = { initialState, makePlayer, placeChip, scoring, enterEvaluation, finishEvaluation, beginRound, maybeFinishEvaluation };
+const __test = { initialState, makePlayer, placeChip, scoring, enterEvaluation, finishEvaluation, beginRound, maybeFinishEvaluation };
 export default defineRoom({
     meta: { name: 'Cauldron Rush', minPlayers: 2, maxPlayers: 5 },
     initialState,
