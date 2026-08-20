@@ -10,6 +10,9 @@ execFileSync(tsc,['--target','ES2022','--module','ESNext','--moduleResolution','
 cpSync('public/parti.room.json',path.join(dist,'parti.room.json'));
 cpSync('src/ui/style.css',path.join(dist,'style.css'));
 cpSync(path.join(tmp,'index.js'),path.join(dist,'room.worker.js'));
+const workerSource=readFileSync(path.join(dist,'room.worker.js'),'utf8');
+const unexpectedExports=[...workerSource.matchAll(/\bexport\s+(?!default\b)/g)];
+if(unexpectedExports.length) throw new Error('room.worker.js contains unsupported named exports; Parti loader only accepts export default defineRoom(...)');
 let ui=readFileSync(path.join(tmp,'ui','main.js'),'utf8').replace("import './style.css';",'');
 writeFileSync(path.join(dist,'main.js'),ui);
 let html=readFileSync('index.html','utf8').replace('<script type="module" src="/src/ui/main.ts"></script>','<link rel="stylesheet" href="./style.css" /><script type="module" src="./main.js"></script>');
